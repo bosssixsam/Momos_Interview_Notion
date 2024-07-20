@@ -17,7 +17,11 @@ const Search: React.FC<SearchProps> = ({ className, placeHolder, isNumber, name,
         onChangeValue(value, name)
     }, [])
 
-    const { text, handleChange } = useInputs({
+    React.useEffect(() => {
+        handleChangeValue(value)
+    }, [value])
+
+    const { text, handleChange, handleChangeValue } = useInputs({
         defaultValue: value,
         onHandleDebounce: handleDebounceChange
     })

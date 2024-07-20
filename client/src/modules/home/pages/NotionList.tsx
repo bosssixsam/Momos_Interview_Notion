@@ -16,9 +16,10 @@ const NotionList = () => {
     //     loadList()
     // }, [])
 
-    const loadList = (sort?: SortItem) => {
+    const loadList = (sort?: SortItem, filter?: Record<string, any>) => {
         const params: ListRequest = {
-            sort
+            sort,
+            filter
         }
 
         dispatch(homeRedux.getListThunk(params))

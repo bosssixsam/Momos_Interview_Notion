@@ -8,6 +8,7 @@ export interface SortItem {
 
 export interface ListRequest {
     sort?: SortItem
+    filter?: Record<string, any>
 }
 
 export interface InitialStateProps {

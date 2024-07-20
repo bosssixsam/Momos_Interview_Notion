@@ -30,7 +30,7 @@ export interface TableProps<TData extends object> {
     onSortClick: (id: string) => void
 }
 
-const Table = <TData extends object>({ columns, headerClassName, data, sortState, onDragEnd, onSortClick }: TableProps<TData>) => {
+const Table = <TData extends object>({ loading, columns, headerClassName, data, sortState, onDragEnd, onSortClick }: TableProps<TData>) => {
     const wrapperDivRef = React.useRef<HTMLDivElement>(null)
 
     const tableConfig = useReactTable({

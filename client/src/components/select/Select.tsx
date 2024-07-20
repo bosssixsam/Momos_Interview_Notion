@@ -19,7 +19,7 @@ export interface SelectProps {
 const Select: React.FC<SelectProps> = ({ className, placeHolder, name, value, options, onValueChange }) => {
     return (
         <USelect value={value} onValueChange={(value) => onValueChange(value, name)}>
-            <SelectTrigger className={cn('w-[180px]', className)}>
+            <SelectTrigger className={cn('w-[180px]', value.length > 0 && 'bg-slate-100', className)}>
                 <SelectValue placeholder={placeHolder} />
             </SelectTrigger>
             <SelectContent>
