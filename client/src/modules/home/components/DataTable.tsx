@@ -13,6 +13,7 @@ import { formatDate, reorderItem } from '@/modules/home/utils'
 import { SortingValue } from '@/shared/enum'
 import { cn } from '@/shared/utils'
 import { SortItem } from '../interface'
+import HelperBar from './HelperBar'
 
 export interface DataTableProps<T extends object> {
     loadData: (sort?: SortItem) => void
@@ -52,8 +53,9 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
         } else {
             if (sortValue === SortingValue.ASCENDING) {
                 setSortValue(SortingValue.DESCENDING)
-            } else {
-                setSort(SortingValue.ASCENDING)
+            }
+            if (sortValue === SortingValue.DESCENDING) {
+                setSortValue(SortingValue.ASCENDING)
             }
         }
     }
@@ -65,6 +67,11 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
             handleSortValue(SortingValue.ASCENDING)
         }
         setSort(id)
+    }
+
+    const handleRemoveSort = () => {
+        setSort('')
+        setSortValue(SortingValue.ASCENDING)
     }
 
     const configColumns = React.useMemo<ColumnDef<ItemModel>[]>(() => {
@@ -114,7 +121,8 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
     }, [columns])
 
     return (
-        <div className="p-4">
+        <div className="p-4 space-y-4">
+            <HelperBar sort={sort} onSortTagClick={handleRemoveSort} />
             <div className="flex items-center justify-center">
                 <div className="max-h-[80vh] overflow-y-auto">
                     <Table sortState={sort} columns={configColumns} data={data ?? []} onDragEnd={handleDragEnd} onSortClick={handleSort} />
