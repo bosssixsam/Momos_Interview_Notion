@@ -8,11 +8,11 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ItemModel, TagModel } from '@/interfaces/models'
 import * as FilterItem from '@/modules/home/components/filter'
-import { DefaultColumnsKey, FilterState, IsEkycOptions } from '@/modules/home/constants'
+import { DefaultColumnsKey, FilterState, IsEkycOptions, SelectOptions, StatusOptions, TagsOptions } from '@/modules/home/constants'
 import { selectHome } from '@/modules/home/redux'
 import { formatDate, reorderItem } from '@/modules/home/utils'
 import { SortingValue } from '@/shared/enum'
-import { cn } from '@/shared/utils'
+// import { cn } from '@/shared/utils'
 import { FilterParams, SortItem } from '../interface'
 import HelperBar from './HelperBar'
 
@@ -78,11 +78,11 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
 
     /// handling filter ---
 
-    const handleName = (value: string, _: string) => {
+    const handleFilter = <T extends string | number | Types.Undefined<Date> | string[]>(value: T, name: string) => {
         setFilterState((prev) => {
             return {
                 ...prev,
-                name: value
+                [name]: value
             }
         })
     }
@@ -133,26 +133,46 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
         })
     }, [columns])
 
-    const handleSelect = (value: string, name: string) => {
-        setFilterState((prev) => {
-            return {
-                ...prev,
-                [name]: value
-            }
-        })
-    }
-
     return (
         <div className="p-4 space-y-4">
-            <div className="flex items-center space-x-3">
-                <FilterItem.Search name="name" value={filterState.name} onChangeValue={handleName} />
+            <div className="flex flex-wrap items-center space-y-2 space-x-3">
+                <FilterItem.Search placeHolder="Search name" name="name" value={filterState.name} onChangeValue={handleFilter<string>} />
+                <FilterItem.Search
+                    isNumber
+                    placeHolder="Search money"
+                    name="money"
+                    value={filterState.money}
+                    onChangeValue={handleFilter<string>}
+                />
+                <FilterItem.Select
+                    name={'select'}
+                    placeHolder="select"
+                    value={filterState.select}
+                    options={SelectOptions}
+                    onValueChange={handleFilter<string>}
+                />
                 <FilterItem.Select
                     name={'isEkyc'}
                     placeHolder="isEkyc"
                     value={filterState.isEkyc}
                     options={IsEkycOptions}
-                    onValueChange={handleSelect}
+                    onValueChange={handleFilter<string>}
                 />
+                <FilterItem.Select
+                    name={'status'}
+                    placeHolder="status"
+                    value={filterState.status}
+                    options={StatusOptions}
+                    onValueChange={handleFilter<string>}
+                />
+                <FilterItem.Multiselect
+                    placeholder="tags"
+                    name="tags"
+                    value={filterState.tags}
+                    options={TagsOptions}
+                    onChangeValue={handleFilter<string[]>}
+                />
+                <FilterItem.Picker name="updateTime" value={filterState.updateTime} onChangeValue={handleFilter<Types.Undefined<Date>>} />
 
                 {/* <FilterItem.StatusFilter />
                 <FilterItem.DateFilter />

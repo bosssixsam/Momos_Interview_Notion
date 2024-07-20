@@ -5,12 +5,14 @@ import { cn } from '@/shared/utils'
 
 export interface SearchProps {
     className?: string
+    isNumber?: boolean
+    placeHolder?: string
     name: string
     value: string
     onChangeValue: (value: string, name: string) => void
 }
 
-const Search: React.FC<SearchProps> = ({ className, name, value, onChangeValue }) => {
+const Search: React.FC<SearchProps> = ({ className, placeHolder, isNumber, name, value, onChangeValue }) => {
     const handleDebounceChange = React.useCallback((value: string) => {
         onChangeValue(value, name)
     }, [])
@@ -20,7 +22,15 @@ const Search: React.FC<SearchProps> = ({ className, name, value, onChangeValue }
         onHandleDebounce: handleDebounceChange
     })
 
-    return <Input className={cn('max-w-[250px]', className)} placeholder="Search name" value={text} onChange={handleChange} />
+    return (
+        <Input
+            type={isNumber ? 'number' : 'text'}
+            className={cn('max-w-[250px]', className)}
+            placeholder={placeHolder}
+            value={text}
+            onChange={handleChange}
+        />
+    )
 }
 
 export default Search

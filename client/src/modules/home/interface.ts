@@ -1,5 +1,5 @@
 import { ItemModel } from '@/interfaces/models'
-import { BoolEnum, SortingValue } from '@/shared/enum'
+import { BoolEnum, SelectOptionEnum, SortingValue, StatusEnum } from '@/shared/enum'
 
 export interface SortItem {
     sortName: string
@@ -19,4 +19,9 @@ export interface InitialStateProps {
 export interface FilterParams {
     name: string
     isEkyc: BoolEnum
+    updateTime: Types.Undefined<Date>
+    select: SelectOptionEnum
+    money: string
+    status: StatusEnum
+    tags: string[]
 }
