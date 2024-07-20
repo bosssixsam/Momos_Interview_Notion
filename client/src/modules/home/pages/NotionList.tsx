@@ -5,25 +5,30 @@ import * as HomeItem from '@/modules/home/components'
 import * as homeRedux from '@/modules/home/redux'
 import { useAppDispatch } from '@/shared/hooks'
 import injectReducerSaga from '@/stores/injectReducerSaga'
+import { ListRequest, SortItem } from '../interface'
 
 const NotionList = () => {
     injectReducerSaga(homeRedux.KeyReducerSaga, homeRedux.homeReducer)
 
     const dispatch = useAppDispatch()
 
-    React.useEffect(() => {
-        loadList()
-    }, [])
+    // React.useEffect(() => {
+    //     loadList()
+    // }, [])
 
-    const loadList = () => {
-        dispatch(homeRedux.getListThunk())
+    const loadList = (sort?: SortItem) => {
+        const params: ListRequest = {
+            sort
+        }
+
+        dispatch(homeRedux.getListThunk(params))
     }
 
     return (
         <div className="space-y-4">
             <h1>NotionList</h1>
             <div className="">
-                <HomeItem.DataTable />
+                <HomeItem.DataTable loadData={loadList} />
             </div>
         </div>
     )

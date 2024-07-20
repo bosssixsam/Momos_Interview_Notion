@@ -1,20 +1,16 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { ListRequest } from '../interface'
 import { HomeService } from '../service'
 
 export const KeyReducerSaga = '@home'
 
-export const getListThunk = createAsyncThunk(`${KeyReducerSaga}/list`, async (_, { rejectWithValue }) => {
+export const getListThunk = createAsyncThunk(`${KeyReducerSaga}/list`, async (params: ListRequest, { rejectWithValue }) => {
     try {
-        const response = await HomeService.getList()
-        console.log('asdfasdf', response)
-        // if (response.data) {
-        //     const { token, refreshToken } = response.data ?? {}
-        //     setToken({
-        //         accessToken: token,
-        //         refreshToken
-        //     })
-        //     return response.data
-        // }
+        const response = await HomeService.getList(params)
+
+        if (response.data) {
+            return response.data
+        }
     } catch (err: any) {
         if (!err.response) {
             throw err

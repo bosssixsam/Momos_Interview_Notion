@@ -1,38 +1,31 @@
 // import { IRootState } from '@/modules/shared'
-import { createSlice } from '@reduxjs/toolkit'
+import { RootState } from '@/stores/store'
+import { createSelector, createSlice } from '@reduxjs/toolkit'
+import { InitialState } from '../constants'
+import { InitialStateProps } from '../interface'
 import { KeyReducerSaga, getListThunk } from './thunk'
-
-// import { ReduxInitialState, ReduxKey } from './constant'
-// import { login } from './thunk'
 
 const homeSlice = createSlice({
     name: KeyReducerSaga,
-    initialState: {},
-    reducers: {
-        // checkAuth: (state) => {
-        //   const token = getToken();
-        //   if (token && token !== null) {
-        //     state.isAuth = true;
-        //   } else {
-        //     state.isAuth = false;
-        //   }
-        // },
-    },
+    initialState: InitialState,
+    reducers: {},
     extraReducers: (builder) => {
         builder
 
             .addCase(getListThunk.pending, (state) => {
-                // state.loading = true
+                state.loading = true
             })
             .addCase(getListThunk.fulfilled, (state, action) => {
-                // state.loading = false
-                // state.isAuth = true;
-                // state.error = null;
+                console.log('asdfasfd', action.payload)
+
+                state.loading = false
+                state.data = action.payload
+                state.error = null
             })
             .addCase(getListThunk.rejected, (state, action) => {
                 console.log('slcicee', action.error)
 
-                // state.loading = false
+                state.loading = false
                 // state.isAuth = false;
                 // state.error = action.error.message;
             })
@@ -45,7 +38,9 @@ const homeSlice = createSlice({
 
 // Selectors
 
-// export const selectAuth = (state: IRootState<any>) => state.auth
+const rootSelector = (state: { [key: string]: InitialStateProps }) => state[KeyReducerSaga]
+
+export const selectHome = () => createSelector(rootSelector, (item) => item)
 
 // Reducer
 

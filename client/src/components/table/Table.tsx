@@ -1,7 +1,9 @@
 import React from 'react'
-import { TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Table as UTable } from '@/components/ui/table'
+import { DropResult } from 'react-beautiful-dnd'
+import { TableBody, TableCell, TableFooter, TableRow, Table as UTable } from '@/components/ui/table'
 import { cn } from '@/shared/utils'
 import { ColumnDef as RTColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import TableHead from './TableHead'
 
 export interface ColumnMeta {
     width?: number
@@ -23,41 +25,32 @@ export interface TableProps<TData extends object> {
     headerClassName?: string
     columns: ColumnDef<TData>[]
     data: Array<TData>
+    sortState?: string
+    onDragEnd: (result: DropResult) => void
+    onSortClick: (id: string) => void
 }
 
-const Table = <TData extends object>({ columns, headerClassName, data }: TableProps<TData>) => {
+const Table = <TData extends object>({ columns, headerClassName, data, sortState, onDragEnd, onSortClick }: TableProps<TData>) => {
     const wrapperDivRef = React.useRef<HTMLDivElement>(null)
 
-    const { getHeaderGroups, getRowModel, getFooterGroups } = useReactTable({
+    const tableConfig = useReactTable({
         columns,
         data,
         getCoreRowModel: getCoreRowModel()
     })
-    // const { getHeaderGroups, getRowModel, getFooterGroups } = table
-
-    // console.log('asfd TEST TABLE -----', getFooterGroups())
+    const { getRowModel, getFooterGroups } = tableConfig
 
     return (
         <UTable>
-            <TableHeader className={cn('bg-slate-100 rounded', headerClassName)}>
-                {/* // config header --- */}
-
-                {getHeaderGroups().map(({ headers, id }) => {
-                    return (
-                        <TableRow key={id}>
-                            {headers.map((header) => {
-                                return (
-                                    <TableHead key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
-                                )
-                            })}
-                        </TableRow>
-                    )
-                })}
-            </TableHeader>
+            <TableHead
+                sortState={sortState}
+                headerClassName={headerClassName}
+                tableConfig={tableConfig}
+                onDragEnd={onDragEnd}
+                onSortClick={onSortClick}
+            />
 
             <TableBody>
-                {/* // config body --- */}
-
                 {getRowModel().rows.map((row) => (
                     <TableRow key={row.id}>
                         {row.getVisibleCells().map((cell) => (

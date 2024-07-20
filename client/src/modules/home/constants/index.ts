@@ -1,4 +1,5 @@
 import { ItemModel } from '@/interfaces/models'
+import { InitialStateProps } from '../interface'
 
 export const DefaultColumnsKey: Array<keyof ItemModel> = [
     'name',
@@ -11,3 +12,9 @@ export const DefaultColumnsKey: Array<keyof ItemModel> = [
     'url',
     'updateTime'
 ]
+
+export const InitialState: InitialStateProps = {
+    loading: false,
+    data: [],
+    error: null
+}

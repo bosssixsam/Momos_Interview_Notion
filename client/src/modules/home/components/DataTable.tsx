@@ -1,184 +1,125 @@
 'use client'
 
 import React from 'react'
-import { DragDropContext, Draggable, DropResult, Droppable } from 'react-beautiful-dnd'
+import { DropResult } from 'react-beautiful-dnd'
+import { useSelector } from 'react-redux'
 import { ColumnDef, Table } from '@/components/table'
-import { Button } from '@/components/ui/button'
-import { TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Table as UTable } from '@/components/ui/table'
-import { ItemModel } from '@/interfaces/models'
-import { MockListDatta } from '@/mock/data'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ItemModel, TagModel } from '@/interfaces/models'
 import { DefaultColumnsKey } from '@/modules/home/constants'
+import { selectHome } from '@/modules/home/redux'
+import { formatDate, reorderItem } from '@/modules/home/utils'
+import { SortingValue } from '@/shared/enum'
 import { cn } from '@/shared/utils'
-import { CaretSortIcon, ChevronDownIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { SortItem } from '../interface'
 
-export interface DataTableProps<T extends object> {}
+export interface DataTableProps<T extends object> {
+    loadData: (sort?: SortItem) => void
+}
 
-const DataTable = <T extends object>(props: DataTableProps<T>) => {
-    const [client, setClient] = React.useState(false)
+const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
+    const { data } = useSelector(selectHome()) || {}
+    const [sort, setSort] = React.useState<string>('')
+    const [sortValue, setSortValue] = React.useState<SortingValue>(SortingValue.ASCENDING)
     const [columns, setColumns] = React.useState<Array<keyof ItemModel>>(DefaultColumnsKey)
-    const configColumns = columns.map((item) => {
-        return {
-            accessorKey: item
-        }
-    })
-
-    const { getHeaderGroups, getRowModel, getFooterGroups, getState } = useReactTable({
-        columns: configColumns,
-        data: MockListDatta,
-        getCoreRowModel: getCoreRowModel()
-    })
 
     React.useEffect(() => {
-        if (window !== undefined) {
-            setClient(true)
-        }
-    }, [])
+        const sortParams: Types.Undefined<SortItem> =
+            sort.length > 0
+                ? {
+                      sortName: sort,
+                      sortValue
+                  }
+                : undefined
 
-    // const configColumns = React.useMemo<ColumnDef<ItemModel>[]>(() => {
-    //     return columns.map((item) => {
-    //         return {
-    //             accessorKey: item
-    //         }
-    //     })
-    // }, [columns])
-
-    const reorder = (list: string[], startIndex: number, endIndex: number): string[] => {
-        const result = Array.from(list)
-        const [removed] = result.splice(startIndex, 1)
-        result.splice(endIndex, 0, removed)
-
-        return result
-    }
-
-    const getListStyle = (isDraggingOver: boolean) => ({
-        // background: isDraggingOver ? 'lightblue' : 'lightgrey',
-        // display: 'flex',
-        // padding: grid,
-        overflow: 'auto'
-    })
+        loadData(sortParams)
+    }, [sort, sortValue])
 
     const handleDragEnd = (result: DropResult) => {
-        console.log('dragEnd', result)
-
         if (!result.destination) {
             return
         }
-        const items = reorder(columns, result.source.index, result.destination.index)
+        const items = reorderItem(columns, result.source.index, result.destination.index)
         setColumns(items as (keyof ItemModel)[])
     }
 
-    const testttt = [
-        { id: 'item-1', content: 'Item 1' },
-        { id: 'item-2', content: 'Item 2' },
-        { id: 'item-3', content: 'Item 3' }
-    ]
+    /// Handle sorting ---
+
+    const handleSortValue = (value?: SortingValue) => {
+        if (value) {
+            setSort(value)
+        } else {
+            if (sortValue === SortingValue.ASCENDING) {
+                setSortValue(SortingValue.DESCENDING)
+            } else {
+                setSort(SortingValue.ASCENDING)
+            }
+        }
+    }
+
+    const handleSort = (id: string) => {
+        if (id === sort) {
+            handleSortValue()
+        } else {
+            handleSortValue(SortingValue.ASCENDING)
+        }
+        setSort(id)
+    }
+
+    const configColumns = React.useMemo<ColumnDef<ItemModel>[]>(() => {
+        return columns.map((item) => {
+            return {
+                accessorKey: item,
+                ...(item === 'updateTime' && {
+                    cell({ getValue }) {
+                        const value = getValue<string>()
+                        return formatDate(value)
+                    }
+                }),
+                ...(item === 'isEkyc' && {
+                    cell({ getValue }) {
+                        const value = getValue<boolean>()
+                        return <Checkbox checked={value} disabled />
+                    }
+                }),
+                ...(item === 'select' && {
+                    cell({ getValue }) {
+                        const value = getValue<TagModel>()
+                        return <Badge>{value.name}</Badge>
+                    }
+                }),
+                ...(item === 'status' && {
+                    cell({ getValue }) {
+                        const value = getValue<TagModel>()
+                        return <Badge variant={'secondary'}>{value.name}</Badge>
+                    }
+                }),
+                ...(item === 'tags' && {
+                    cell({ getValue }) {
+                        const value = getValue<TagModel[]>()
+                        return (
+                            <div className="flex flex-wrap space-x-1 space-y-1">
+                                {value.map((item, index) => (
+                                    <Badge key={index} variant={'outline'}>
+                                        {item.name}
+                                    </Badge>
+                                ))}
+                            </div>
+                        )
+                    }
+                })
+            }
+        })
+    }, [columns])
 
     return (
         <div className="p-4">
-            DataTable
-            {client && (
-                <UTable>
-                    <TableHeader className={cn('bg-slate-100 rounded')}>
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                            <Droppable droppableId="droppable" direction="horizontal">
-                                {(provided) => {
-                                    return (
-                                        <>
-                                            {getHeaderGroups().map(({ headers, id }) => {
-                                                return (
-                                                    <TableRow key={id} ref={provided.innerRef} {...provided.droppableProps}>
-                                                        {headers.map((header, index) => {
-                                                            return (
-                                                                <TableHead
-                                                                    className="relative"
-                                                                    style={{
-                                                                        width: header.getSize()
-                                                                    }}
-                                                                >
-                                                                    {/* <div className="bg-slate-500 w-[1px] h-full absolute top-0 left-0"></div> */}
-                                                                    <Draggable key={header.id} draggableId={header.id} index={index}>
-                                                                        {(provided) => {
-                                                                            return (
-                                                                                <div
-                                                                                    key={header.id}
-                                                                                    ref={provided.innerRef}
-                                                                                    {...provided.draggableProps}
-                                                                                    {...provided.dragHandleProps}
-                                                                                >
-                                                                                    <div className="flex justify-between items-center">
-                                                                                        {flexRender(
-                                                                                            header.column.columnDef.header,
-                                                                                            header.getContext()
-                                                                                        )}
-                                                                                        <Button
-                                                                                            className={cn(
-                                                                                                'w-[30px] h-[30px] p-1 flex justify-center items-center bg-transparent'
-                                                                                            )}
-                                                                                        >
-                                                                                            <CaretSortIcon className="text-blue-500 h-4 w-4" />
-                                                                                        </Button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            )
-                                                                        }}
-                                                                    </Draggable>
-                                                                    <div
-                                                                        className="bg-slate-500 w-[2px] h-full absolute top-0 right-0 cursor-col-resize select-none touch-none"
-                                                                        style={{
-                                                                            transform: header.column.getIsResizing()
-                                                                                ? `translateX(${getState().columnSizingInfo.deltaOffset}px)`
-                                                                                : ''
-                                                                        }}
-                                                                        onMouseDown={header.getResizeHandler()}
-                                                                        onTouchStart={header.getResizeHandler()}
-                                                                    ></div>
-                                                                </TableHead>
-
-                                                                // <TableHead key={header.id}>
-                                                                //     {flexRender(header.column.columnDef.header, header.getContext())}
-                                                                // </TableHead>
-                                                            )
-                                                        })}
-                                                    </TableRow>
-                                                )
-                                            })}
-                                        </>
-                                    )
-                                }}
-                            </Droppable>
-                        </DragDropContext>
-                    </TableHeader>
-
-                    <TableBody>
-                        {getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-
-                    {getFooterGroups().map((footerGroup) => {
-                        if (footerGroup.depth > 0) {
-                            return (
-                                <TableFooter>
-                                    <TableRow key={footerGroup.id}>
-                                        {footerGroup.headers.map((header) => (
-                                            <TableCell key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(header.column.columnDef.footer, header.getContext())}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableFooter>
-                            )
-                        }
-                    })}
-                </UTable>
-            )}
+            <div className="flex items-center justify-center">
+                <div className="max-h-[80vh] overflow-y-auto">
+                    <Table sortState={sort} columns={configColumns} data={data ?? []} onDragEnd={handleDragEnd} onSortClick={handleSort} />
+                </div>
+            </div>
         </div>
     )
 }
