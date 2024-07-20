@@ -3,11 +3,13 @@
 import React from 'react'
 import { DragDropContext, Draggable, DropResult, Droppable } from 'react-beautiful-dnd'
 import { ColumnDef, Table } from '@/components/table'
+import { Button } from '@/components/ui/button'
 import { TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, Table as UTable } from '@/components/ui/table'
 import { ItemModel } from '@/interfaces/models'
 import { MockListDatta } from '@/mock/data'
 import { DefaultColumnsKey } from '@/modules/home/constants'
 import { cn } from '@/shared/utils'
+import { CaretSortIcon, ChevronDownIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 export interface DataTableProps<T extends object> {}
@@ -21,7 +23,7 @@ const DataTable = <T extends object>(props: DataTableProps<T>) => {
         }
     })
 
-    const { getHeaderGroups, getRowModel, getFooterGroups } = useReactTable({
+    const { getHeaderGroups, getRowModel, getFooterGroups, getState } = useReactTable({
         columns: configColumns,
         data: MockListDatta,
         getCoreRowModel: getCoreRowModel()
@@ -88,8 +90,13 @@ const DataTable = <T extends object>(props: DataTableProps<T>) => {
                                                     <TableRow key={id} ref={provided.innerRef} {...provided.droppableProps}>
                                                         {headers.map((header, index) => {
                                                             return (
-                                                                <TableHead>
-                                                                    <div className='flex'></div>
+                                                                <TableHead
+                                                                    className="relative"
+                                                                    style={{
+                                                                        width: header.getSize()
+                                                                    }}
+                                                                >
+                                                                    {/* <div className="bg-slate-500 w-[1px] h-full absolute top-0 left-0"></div> */}
                                                                     <Draggable key={header.id} draggableId={header.id} index={index}>
                                                                         {(provided) => {
                                                                             return (
@@ -99,15 +106,33 @@ const DataTable = <T extends object>(props: DataTableProps<T>) => {
                                                                                     {...provided.draggableProps}
                                                                                     {...provided.dragHandleProps}
                                                                                 >
-                                                                                    {flexRender(
-                                                                                        header.column.columnDef.header,
-                                                                                        header.getContext()
-                                                                                    )}
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        {flexRender(
+                                                                                            header.column.columnDef.header,
+                                                                                            header.getContext()
+                                                                                        )}
+                                                                                        <Button
+                                                                                            className={cn(
+                                                                                                'w-[30px] h-[30px] p-1 flex justify-center items-center bg-transparent'
+                                                                                            )}
+                                                                                        >
+                                                                                            <CaretSortIcon className="text-blue-500 h-4 w-4" />
+                                                                                        </Button>
+                                                                                    </div>
                                                                                 </div>
                                                                             )
                                                                         }}
                                                                     </Draggable>
-                                                                    <div className="bg-slate-500 w-[1px] h-full"></div>
+                                                                    <div
+                                                                        className="bg-slate-500 w-[2px] h-full absolute top-0 right-0 cursor-col-resize select-none touch-none"
+                                                                        style={{
+                                                                            transform: header.column.getIsResizing()
+                                                                                ? `translateX(${getState().columnSizingInfo.deltaOffset}px)`
+                                                                                : ''
+                                                                        }}
+                                                                        onMouseDown={header.getResizeHandler()}
+                                                                        onTouchStart={header.getResizeHandler()}
+                                                                    ></div>
                                                                 </TableHead>
 
                                                                 // <TableHead key={header.id}>
