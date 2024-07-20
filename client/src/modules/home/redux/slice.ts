@@ -38,9 +38,9 @@ const homeSlice = createSlice({
 
 // Selectors
 
-const rootSelector = (state: { [key: string]: InitialStateProps }) => state[KeyReducerSaga]
+const rootSelector = (state: { [key: string]: InitialStateProps }) => state
 
-export const selectHome = () => createSelector(rootSelector, (item) => item)
+export const selectHome = () => createSelector(rootSelector, (item) => item[KeyReducerSaga])
 
 // Reducer
 

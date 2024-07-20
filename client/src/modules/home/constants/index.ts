@@ -1,5 +1,6 @@
 import { ItemModel } from '@/interfaces/models'
-import { InitialStateProps } from '../interface'
+import { BoolEnum } from '@/shared/enum'
+import { FilterParams, InitialStateProps } from '../interface'
 
 export const DefaultColumnsKey: Array<keyof ItemModel> = [
     'name',
@@ -18,3 +19,17 @@ export const InitialState: InitialStateProps = {
     data: [],
     error: null
 }
+
+export const FilterState: FilterParams = {
+    name: '',
+    isEkyc: BoolEnum.ALL
+}
+
+export const IsEkycOptions: {
+    value: BoolEnum
+    label: string
+}[] = [
+    // { value: BoolEnum.ALL, label: 'All' },
+    { value: BoolEnum.TRUE, label: 'Yes' },
+    { value: BoolEnum.FALSE, label: 'No' }
+]

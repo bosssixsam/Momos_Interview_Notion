@@ -11,7 +11,6 @@ export interface HelperBarProps {
 const HelperBar: React.FC<HelperBarProps> = ({ className, sort, onSortTagClick }) => {
     return (
         <div className="border-[1px] border-solid rounded-md space-y-2 p-4">
-            <h2 className="font-semibold text-[1.5rem] capitalize">Helper Bar</h2>
             <div className={cn('flex items-center justify-between', className)}>
                 <div className="flex items-center space-x-2">
                     {sort.length > 0 && (

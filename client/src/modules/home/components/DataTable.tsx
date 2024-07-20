@@ -7,12 +7,13 @@ import { ColumnDef, Table } from '@/components/table'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ItemModel, TagModel } from '@/interfaces/models'
-import { DefaultColumnsKey } from '@/modules/home/constants'
+import * as FilterItem from '@/modules/home/components/filter'
+import { DefaultColumnsKey, FilterState, IsEkycOptions } from '@/modules/home/constants'
 import { selectHome } from '@/modules/home/redux'
 import { formatDate, reorderItem } from '@/modules/home/utils'
 import { SortingValue } from '@/shared/enum'
 import { cn } from '@/shared/utils'
-import { SortItem } from '../interface'
+import { FilterParams, SortItem } from '../interface'
 import HelperBar from './HelperBar'
 
 export interface DataTableProps<T extends object> {
@@ -24,6 +25,7 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
     const [sort, setSort] = React.useState<string>('')
     const [sortValue, setSortValue] = React.useState<SortingValue>(SortingValue.ASCENDING)
     const [columns, setColumns] = React.useState<Array<keyof ItemModel>>(DefaultColumnsKey)
+    const [filterState, setFilterState] = React.useState<FilterParams>(FilterState)
 
     React.useEffect(() => {
         const sortParams: Types.Undefined<SortItem> =
@@ -74,6 +76,17 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
         setSortValue(SortingValue.ASCENDING)
     }
 
+    /// handling filter ---
+
+    const handleName = (value: string, _: string) => {
+        setFilterState((prev) => {
+            return {
+                ...prev,
+                name: value
+            }
+        })
+    }
+
     const configColumns = React.useMemo<ColumnDef<ItemModel>[]>(() => {
         return columns.map((item) => {
             return {
@@ -120,8 +133,33 @@ const DataTable = <T extends object>({ loadData }: DataTableProps<T>) => {
         })
     }, [columns])
 
+    const handleSelect = (value: string, name: string) => {
+        setFilterState((prev) => {
+            return {
+                ...prev,
+                [name]: value
+            }
+        })
+    }
+
     return (
         <div className="p-4 space-y-4">
+            <div className="flex items-center space-x-3">
+                <FilterItem.Search name="name" value={filterState.name} onChangeValue={handleName} />
+                <FilterItem.Select
+                    name={'isEkyc'}
+                    placeHolder="isEkyc"
+                    value={filterState.isEkyc}
+                    options={IsEkycOptions}
+                    onValueChange={handleSelect}
+                />
+
+                {/* <FilterItem.StatusFilter />
+                <FilterItem.DateFilter />
+                <FilterItem.CheckboxFilter />
+                <FilterItem.TagFilter />
+                <FilterItem.DropdownFilter /> */}
+            </div>
             <HelperBar sort={sort} onSortTagClick={handleRemoveSort} />
             <div className="flex items-center justify-center">
                 <div className="max-h-[80vh] overflow-y-auto">
