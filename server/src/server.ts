@@ -6,15 +6,6 @@ import cors from "cors";
 
 const express = require("express");
 
-// This is Typescript  interface for the shape of the object we will
-// create based on our database to send to the React app
-// When the data is queried it will come back in a much more complicated shape, so our goal is to
-// simplify it to make it easy to work with on the front end
-interface ThingToLearn {
-  label: string;
-  url: string;
-}
-
 // The dotenv library will read from your .env file into these values on `process.env`
 const notionDatabaseId = process.env.NOTION_DATABASE_ID;
 const notionSecret = process.env.NOTION_SECRET;
@@ -88,13 +79,100 @@ const app = express();
 app.use(cors());
 
 app.get("/", async (req: Request, res: Response) => {
-  const { sort } = req.query || ({} as any);
+  const { sort, filter } = req.query || ({} as any);
 
   const sortItem: any = sort;
+  const filterItem: any = filter;
+
+  const tagsItem = filterItem?.tags.split(",") ?? [];
 
   try {
     const query = await notion.databases.query({
       database_id: notionDatabaseId,
+      ...(filterItem &&
+        Object.keys(filterItem).length > 0 && {
+          filter: {
+            and: [
+              ...(filterItem.name
+                ? [
+                    {
+                      property: "name",
+                      relation: {
+                        contains: filterItem.name,
+                      },
+                    },
+                  ]
+                : []),
+              ...(filterItem.money
+                ? [
+                    {
+                      property: "money",
+                      number: {
+                        equals: Number(filterItem.money),
+                      },
+                    },
+                  ]
+                : []),
+              ...(filterItem.isEkyc
+                ? [
+                    {
+                      property: "isEkyc",
+                      checkbox: {
+                        equals: filterItem.isEkyc === "true",
+                      },
+                    },
+                  ]
+                : []),
+              ...(filterItem.select
+                ? [
+                    {
+                      property: "select",
+                      select: {
+                        equals: filterItem.select,
+                      },
+                    },
+                  ]
+                : []),
+              ...(filterItem.status
+                ? [
+                    {
+                      property: "status",
+                      select: {
+                        equals: filterItem.status,
+                      },
+                    },
+                  ]
+                : []),
+              ...(filterItem.tags
+                ? [
+                    {
+                      or: tagsItem.map((item: any) => {
+                        return {
+                          property: "tags",
+                          multi_select: {
+                            contains: item,
+                          },
+                        };
+                      }),
+                    },
+                  ]
+                : []),
+              // {
+              //   property: "tags",
+              //   multi_select: {
+              //     contains: "React",
+              //   },
+              // },
+              // {
+              //   property: "tags",
+              //   multi_select: {
+              //     contains: "nextjs",
+              //   },
+              // },
+            ],
+          },
+        }),
+
       ...(sort && {
         sorts: [
           {
@@ -106,6 +184,7 @@ app.get("/", async (req: Request, res: Response) => {
     });
 
     console.log("asdf", req.query);
+    console.log("asd fasf heheh", tagsItem);
 
     // We map over the complex shape of the results and return a nice clean array of
     // objects in the shape of our `ThingToLearn` interface
